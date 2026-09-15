@@ -1,0 +1,33 @@
+flowchart LR
+    subgraph Sorgenti["Sorgenti Eventi"]
+        B[Broker<br/>Redis Pub/Sub + Streams]
+        M[MQTT<br/>opzionale]
+        K[Kafka<br/>opzionale]
+    end
+
+    subgraph MS["Microservizio: Real-Time Streaming"]
+        C[Connettore<br/>EventSource]
+        N[Normalizzatore<br/>campi canonici]
+        BM[Broadcast Manager]
+        RB[Replay Buffer<br/>Redis Streams]
+        API[API FastAPI]
+    end
+
+    subgraph Consumatori["Consumatori"]
+        D[Dashboard interna<br/>HTML/CSS/JS]
+        A[Agente / App<br/>desktop/web/mobile]
+    end
+
+    B --> C
+    M --> C
+    K --> C
+    C --> N
+    N --> BM
+    N --> RB
+    RB --> BM
+    BM --> API
+    API -- WebSocket /ws --> D
+    API -- SSE /api/v1/stream --> D
+    API -- WebSocket /ws --> A
+    API -- SSE /api/v1/stream --> A
+    API -- REST /api/v1/events --> A
